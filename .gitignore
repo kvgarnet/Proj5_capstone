@@ -1,0 +1,11 @@
+kvenv
+**/.idea
+**/*.pyc
+Udacity-Full-Stack-Developer-Nanodegree/
+flask-api-course/cd0037-API-Development-and-Documentation-exercises/
+**/*venv
+**/node_modules
+Trivia_forl_review
+Project03_coffee_shop_full_stack
+Project4*
+Proj5*

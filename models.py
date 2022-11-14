@@ -30,8 +30,7 @@ def setup_db(app):
 def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
-    #moved init_db to init_db.py
-    # init_db()
+    #moved init_db work to init_db.py
 
 # Based on lesson 18,implement Movies and Actors models' many2many relationship with 'actor_remuneration' Table
 actor_remuneration = db.Table('actor_remuneration',
@@ -61,6 +60,21 @@ class Movies(db.Model):
             'title': self.title,
             'release_date': self.release_date
         }
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def rollback(self):
+        db.session.rollback()
+
+    def close(self):
+        db.session.close()
 
     def __repr__(self):
         return f'<My Movie "{self.title}">'
@@ -81,3 +95,19 @@ class Actors(db.Model):
         }
     def __repr__(self):
         return f'<My Actor "{self.name}">'
+
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def rollback(self):
+        db.session.rollback()
+
+    def close(self):
+        db.session.close()

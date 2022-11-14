@@ -12,6 +12,13 @@ def format_queries(queries):
     query_format = [query.format() for query in queries]
     return query_format
 
+def validate_date(date_str):
+    try:
+        release_date = datetime.strptime(date_str, '%m-%d-%Y').date()
+        # return release_date
+    except ValueError:
+        print("Incorrect date string format. It should be MM-DD-YYYY")
+        abort(400)
 
 def create_app(test_config=None):
     # create and configure the app
@@ -77,11 +84,7 @@ def create_app(test_config=None):
         if not (title and date_str):
             abort(422)
         # check date input format compatibility
-        try:
-            release_date = datetime.strptime(date_str, '%m-%d-%Y').date()
-        except ValueError:
-            print("Incorrect date string format. It should be MM-DD-YYYY")
-            abort(400)
+        validate_date(date_str)
         try:
             movie = Movies(
             title=title,
@@ -91,6 +94,72 @@ def create_app(test_config=None):
             return jsonify({
                 "success": True,
                 "new_movie": [movie.format()]
+            })
+        except:
+            movie.rollback()
+            print(sys.exc_info())
+            return abort(422)
+        finally:
+            movie.close()
+
+    @app.route('/actors/new', methods=['POST'])
+    def create_actor():
+        body = request.get_json()
+        if not body:
+            abort(422)
+        else:
+            name = body.get('name', None)
+            gender = body.get('gender', None)
+            age = body.get('age', None)
+        # all fields required
+        if not (name and gender and age):
+            abort(400)
+        try:
+            actor = Actors(
+                name=name,
+                gender=gender,
+                age=age
+            )
+            actor.insert()
+            return jsonify({
+                "success": True,
+                "actor": [actor.format()]
+            })
+        except:
+            actor.rollback()
+            print(sys.exc_info())
+            return abort(422)
+        finally:
+            actor.close()
+
+    @app.route('/movies/<int:id>', methods=['PATCH'])
+    # @requires_auth(permission='patch:drinks')
+    def update_movies(id):
+        movie = Movies.query.filter_by(id=id).one_or_none()
+        # query via 'filter'
+        # movie = Movies.query.filter(Movies.id == id).one_or_none()
+        if not movie:
+            abort(404)
+        body = request.get_json()
+        title = body.get('title', None)
+        release_date = body.get('release_date', None)
+        # either fields submitted is fine
+        if not (title or release_date):
+            abort(422)
+        if title:
+            movie.title = title
+        print(f"input date is :{release_date}")
+        if release_date:
+            # check date input format compatibility
+            # release_date=validate_date(release_date)
+            validate_date(release_date)
+            movie.release_date=release_date
+            print(f"release date:{movie.release_date}")
+        try:
+            movie.update()
+            return jsonify({
+                "success": True,
+                "movie": [movie.format()]
             })
         except:
             movie.rollback()

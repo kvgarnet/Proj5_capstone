@@ -4,7 +4,6 @@
 import os
 from sqlalchemy import Column, String, Integer, Date
 from flask_sqlalchemy import SQLAlchemy
-from datetime import date
 import json
 
 # database_path = os.environ['DATABASE_URL']
@@ -58,7 +57,7 @@ class Movies(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'release_date': self.release_date
+            'release_date': self.release_date.strftime('%Y-%m-%d')
         }
     def insert(self):
         db.session.add(self)

@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, abort, jsonify
 # from flask_sqlalchemy import SQLAlchemy
-from models import setup_db,db_drop_and_create_all,Movies,Actors,movie_actor_tb
+from models import setup_db,db_drop_and_create_all,Movies,Actors,actor_remuneration
 from flask_cors import CORS
 
 def create_app(test_config=None):

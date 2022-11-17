@@ -1,4 +1,4 @@
-from models import db_drop_and_create_all, db,Movies,Actors,actor_remuneration
+from models import db_drop_and_create_all, db,Movies,Actors,remuneration
 from datetime import date
 from app import create_app
 create_app()
@@ -24,22 +24,22 @@ db.session.commit()
 # movie2.actors=[actor2,actor3]
 # db.session.commit()
 
-remuneration1 = actor_remuneration.insert().values(
+remuneration1 = remuneration.insert().values(
     movie_id = movie1.id,
     actor_id = actor1.id,
     remuneration = 500.00
 )
-remuneration2 = actor_remuneration.insert().values(
+remuneration2 = remuneration.insert().values(
     movie_id = movie1.id,
     actor_id = actor2.id,
     remuneration = 600.00
 )
-remuneration3 = actor_remuneration.insert().values(
+remuneration3 = remuneration.insert().values(
     movie_id = movie2.id,
     actor_id = actor2.id,
     remuneration = 700.00
 )
-remuneration4 = actor_remuneration.insert().values(
+remuneration4 = remuneration.insert().values(
     movie_id = movie2.id,
     actor_id = actor3.id,
     remuneration = 800.00

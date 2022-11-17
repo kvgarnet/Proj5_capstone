@@ -31,8 +31,8 @@ def db_drop_and_create_all():
     db.create_all()
     #moved init_db work to init_db.py
 
-# Based on lesson 18,implement Movies and Actors models' many2many relationship with 'actor_remuneration' Table
-actor_remuneration = db.Table('actor_remuneration',
+# Based on lesson 18,implement Movies and Actors models' many2many relationship with 'remuneration' Table
+remuneration = db.Table('remuneration',
                    # db.Column('id', db.Integer, primary_key=True),
                    db.Column('movie_id', db.Integer, db.ForeignKey('movies.id'), nullable=False),
                    db.Column('actor_id', db.Integer, db.ForeignKey('actors.id'), nullable=False),
@@ -51,13 +51,14 @@ class Movies(db.Model):
     id = Column(Integer, primary_key=True)
     title = Column(String)
     release_date = Column(Date)
-    actors = db.relationship('Actors', secondary=actor_remuneration, backref=db.backref('movies'), lazy=True)
+    actors = db.relationship('Actors', secondary=remuneration, backref=db.backref('movies'), lazy=True)
 
     def format(self):
         return {
             'id': self.id,
             'title': self.title,
-            'release_date': self.release_date.strftime('%Y-%m-%d')
+            'release_date': self.release_date.strftime('%Y-%m-%d'),
+            'actors': [actor.name for actor in self.actors]
         }
     def insert(self):
         db.session.add(self)
@@ -90,7 +91,8 @@ class Actors(db.Model):
             'id': self.id,
             'name': self.name,
             'gender': self.gender,
-            'age': self.age
+            'age': self.age,
+            'movies': [movie.title for movie in self.movies]
         }
     def __repr__(self):
         return f'<My Actor "{self.name}">'

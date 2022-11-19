@@ -5,6 +5,7 @@ import os
 from sqlalchemy import Column, String, Integer, Date,ForeignKey
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
+from sqlalchemy.schema import  UniqueConstraint
 import json
 
 # database_path = os.environ['DATABASE_URL']
@@ -36,12 +37,13 @@ def db_drop_and_create_all():
 # implement Movies and Actors models' many2many relationship with 'remuneration' Class
 class Remuneration(db.Model):
     __tablename__ = 'remuneration'
-    # id = db.Column(db.Integer,autoincrement=True)
-    movie_id = Column(Integer,ForeignKey('movies.id'), primary_key=True)
-    actor_id = Column(Integer,ForeignKey('actors.id'), primary_key=True)
+    id = db.Column(db.Integer,primary_key=True)
+    movie_id = Column(Integer,ForeignKey('movies.id'), nullable=False)
+    actor_id = Column(Integer,ForeignKey('actors.id'), nullable=False)
     remuneration= Column(Integer)
     actor=relationship("Actors",back_populates="movies")
     movie=relationship("Movies",back_populates="actors")
+    __table_args__ = (UniqueConstraint('movie_id', 'actor_id', name='_movie_actor_uc'),)
 
     def format(self):
         return {

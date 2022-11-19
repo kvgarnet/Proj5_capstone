@@ -256,11 +256,17 @@ def get_remuneration():
 def new_remuneration():
     body = request.get_json()
     if not body:
-        abort(422)
+        abort(404)
     else:
         movie_id = body.get('movie_id', None)
         actor_id = body.get('actor_id', None)
         rem = body.get('remuneration', None)
+    #check if valid movie_id and actor_id
+
+    movie = Movies.query.filter_by(id=movie_id).one_or_none()
+    actor = Actors.query.filter_by(id=actor_id).one_or_none()
+    if not( movie and actor):
+        abort(404)
     # all fields required
     if not (movie_id and actor_id and rem):
         abort(400)
@@ -282,17 +288,57 @@ def new_remuneration():
     finally:
         remuneration.close()
 
-    # try:
-    #     filter_single_re=db.session.query(Remuneration).filter_by(movie_id=movie_id).filter_by(actor_id=actor_id).one_or_none()
-    #     print(f"single is: {type(filter_single_re)}")
-    #     filter_single_re.update().values(movie_id=movie_id,actor_id=actor_id,remuneration=rem)
-    #     db.session.commit()
-    # except:
-    #     db.session.rollback()
-    #     print(sys.exc_info())
-    #     return abort(422)
-    # finally:
-    #     db.session.close()
+@app.route('/remuneration', methods=['PATCH'])
+# @requires_auth(permission='patch:drinks')
+def update_remuneration():
+    body = request.get_json()
+    movie_id = body.get('movie_id', None)
+    actor_id = body.get('actor_id', None)
+    rem = body.get('remuneration', None)
+    # either fields submitted is fine
+    if not (movie_id and actor_id):
+        abort(400)
+    remuneration = Remuneration.query.filter_by(movie_id=movie_id).filter_by(actor_id=actor_id).one_or_none()
+    if not remuneration:
+        abort(404)
+    if movie_id:
+        remuneration.movie_id = movie_id
+    if actor_id:
+        remuneration.actor_id = actor_id
+    if remuneration:
+        remuneration.remuneration = rem
+    try:
+        remuneration.update()
+        return jsonify({
+            "success": True,
+            "remuneration": [remuneration.format()]
+        })
+    except:
+        remuneration.rollback()
+        print(sys.exc_info())
+        return abort(422)
+    finally:
+        remuneration.close()
+
+@app.route('/remuneration/<int:id>', methods=['DELETE'])
+# @requires_auth(permission='delete:remuneration')
+def delete_remuneration(id):
+    remuneration = Remuneration.query.filter_by(id=id).one_or_none()
+    if not remuneration:
+        abort(404)
+    try:
+        remuneration.delete()
+        return jsonify({
+            "success": True,
+            "deleted_remuneration": remuneration.id
+        })
+    except:
+        remuneration.rollback()
+        print(sys.exc_info())
+        return abort(422)
+    finally:
+        remuneration.close()
+
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({

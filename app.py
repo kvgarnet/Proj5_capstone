@@ -1,13 +1,18 @@
-import os
-from flask import Flask, request, abort, jsonify
-# from flask_sqlalchemy import SQLAlchemy
-from models import setup_db, Movies, Actors,Remuneration,db
-from flask_cors import CORS
+import json
 import sys
-from datetime import datetime
+from os import environ as env
+from models import setup_db, Movies, Actors,Remuneration,db
 from auth.auth import AuthError, requires_auth
-
-
+from flask import Flask, request, redirect,abort, jsonify,render_template,session,url_for
+from flask_cors import CORS
+from datetime import datetime
+from urllib.parse import quote_plus, urlencode
+from authlib.integrations.flask_client import OAuth
+'''
+use init_db.py script to insert test data into datbase
+!! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
+!! ONLY NECESSARY ON FIRST RUN
+'''
 # format code
 def format_queries(queries):
     return [query.format() for query in queries]
@@ -23,6 +28,8 @@ def validate_date(date_str):
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
+    # print(f'app secret key: {env.get("APP_SECRET_KEY")}')
+    app.secret_key = env.get("APP_SECRET_KEY")
     setup_db(app)
     CORS(app)
 
@@ -30,24 +37,70 @@ def create_app(test_config=None):
 
 app = create_app()
 
-'''
-based on project 3
-run following script before starting app to initialize  datbase
-!! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
-!! ONLY NECESSARY ON FIRST RUN
-'''
+# setup auth0 to get access token,inspired by auth0.com
+# https://auth0.com/docs/quickstart/webapp/python/interactive
+oauth = OAuth(app)
+oauth.register(
+    "auth0",
+    client_id=env.get("AUTH0_CLIENT_ID"),
+    client_secret=env.get("AUTH0_CLIENT_SECRET"),
+    client_kwargs={
+        "scope": "openid profile email",
+    },
+    server_metadata_url=f'https://{env.get("AUTH0_DOMAIN")}/.well-known/openid-configuration',
+)
 
-# init_db.py
 
-@app.route('/')
-def greeting():
-    excited = os.getenv('EXCITED', None)
-    greeting = "Hello"
-    if excited == 'true':
-        greeting = greeting + "!!!!! You are doing great in this Udacity project."
-    return greeting
+#####
+# Capstone Application for auth0 login
+#####
+@app.route("/")
+def home():
+    return render_template(
+        "home.html",
+        session=session.get("user"),
+        pretty=json.dumps(session.get("user"), indent=4),
+    )
 
+
+@app.route("/callback", methods=["GET", "POST"])
+def callback():
+    token = oauth.auth0.authorize_access_token()
+    session["user"] = token
+    # print(f" token is:{token}")
+    return redirect("/")
+
+
+@app.route("/login")
+def login():
+    return oauth.auth0.authorize_redirect(
+        redirect_uri=url_for("callback", _external=True),
+        audience=env.get("API_IDENTIFIER")
+    )
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(
+        "https://"
+        + env.get("AUTH0_DOMAIN")
+        + "/v2/logout?"
+        + urlencode(
+            {
+                "returnTo": url_for("home", _external=True),
+                "client_id": env.get("AUTH0_CLIENT_ID"),
+            },
+            quote_via=quote_plus,
+        )
+    )
+
+
+#####
+# Capstone API endpoint
+#####
 @app.route('/movies')
+@requires_auth(permission='view:movies')
 def movies():
     try:
         movies = Movies.query.order_by('id').all()
@@ -61,21 +114,19 @@ def movies():
         "movies": movies_format
     })
 
-@app.route('/actors')
-def actors():
-    try:
-        actors = Actors.query.order_by('id').all()
-    except:
-        abort(422)
-    if not actors:
+@app.route('/movies/<int:id>')
+@requires_auth(permission='view:movies')
+def get_a_movie(id):
+    movie = Movies.query.filter_by(id=id).one_or_none()
+    if not movie:
         abort(404)
-    actors_format = format_queries(actors)
     return jsonify({
         "success": True,
-        "actors": actors_format
+        "movie": [movie.format()]
     })
 
 @app.route('/movies/new', methods=['POST'])
+@requires_auth(permission='add:movies')
 def create_movie():
     body = request.get_json()
     if not body:
@@ -106,7 +157,91 @@ def create_movie():
     finally:
         movie.close()
 
+
+@app.route('/movies/<int:id>', methods=['PATCH'])
+@requires_auth(permission='modify:movies')
+def update_movies(id):
+    movie = Movies.query.filter_by(id=id).one_or_none()
+    # query via 'filter'
+    # movie = Movies.query.filter(Movies.id == id).one_or_none()
+    if not movie:
+        abort(404)
+    body = request.get_json()
+    title = body.get('title', None)
+    release_date = body.get('release_date', None)
+    # either fields submitted is fine
+    if not (title or release_date):
+        abort(422)
+    if title:
+        movie.title = title
+    print(f"input date is :{release_date}")
+    if release_date:
+        # check date input format compatibility
+        # release_date=validate_date(release_date)
+        validate_date(release_date)
+        movie.release_date = release_date
+        print(f"release date:{movie.release_date}")
+    try:
+        movie.update()
+        return jsonify({
+            "success": True,
+            "movie": [movie.format()]
+        })
+    except:
+        movie.rollback()
+        print(sys.exc_info())
+        return abort(422)
+    finally:
+        movie.close()
+
+@app.route('/movies/<int:id>', methods=['DELETE'])
+@requires_auth(permission='delete:movies')
+def delete_movie(id):
+    movie = Movies.query.filter_by(id=id).one_or_none()
+    if not movie:
+        abort(404)
+    try:
+        movie.delete()
+        return jsonify({
+            "success": True,
+            "deleted_movie": movie.id
+        })
+    except:
+        movie.rollback()
+        print(sys.exc_info())
+        return abort(422)
+    finally:
+        movie.close()
+
+
+@app.route('/actors')
+@requires_auth(permission='view:actors')
+def actors():
+    try:
+        actors = Actors.query.order_by('id').all()
+    except:
+        abort(422)
+    if not actors:
+        abort(404)
+    actors_format = format_queries(actors)
+    return jsonify({
+        "success": True,
+        "actors": actors_format
+    })
+
+@app.route('/actors/<int:id>')
+@requires_auth(permission='view:actors')
+def get_a_actor(id):
+    actor = Actors.query.filter_by(id=id).one_or_none()
+    if not actor:
+        abort(404)
+    return jsonify({
+        "success": True,
+        "actor": [actor.format()]
+    })
+
 @app.route('/actors/new', methods=['POST'])
+@requires_auth(permission='add:actors')
 def create_actor():
     body = request.get_json()
     if not body:
@@ -136,44 +271,9 @@ def create_actor():
     finally:
         actor.close()
 
-@app.route('/movies/<int:id>', methods=['PATCH'])
-# @requires_auth(permission='patch:drinks')
-def update_movies(id):
-    movie = Movies.query.filter_by(id=id).one_or_none()
-    # query via 'filter'
-    # movie = Movies.query.filter(Movies.id == id).one_or_none()
-    if not movie:
-        abort(404)
-    body = request.get_json()
-    title = body.get('title', None)
-    release_date = body.get('release_date', None)
-    # either fields submitted is fine
-    if not (title or release_date):
-        abort(422)
-    if title:
-        movie.title = title
-    print(f"input date is :{release_date}")
-    if release_date:
-        # check date input format compatibility
-        # release_date=validate_date(release_date)
-        validate_date(release_date)
-        movie.release_date=release_date
-        print(f"release date:{movie.release_date}")
-    try:
-        movie.update()
-        return jsonify({
-            "success": True,
-            "movie": [movie.format()]
-        })
-    except:
-        movie.rollback()
-        print(sys.exc_info())
-        return abort(422)
-    finally:
-        movie.close()
 
 @app.route('/actors/<int:id>', methods=['PATCH'])
-# @requires_auth(permission='patch:drinks')
+@requires_auth(permission='modify:actors')
 def update_actors(id):
     actor = Actors.query.filter_by(id=id).one_or_none()
     if not actor:
@@ -204,28 +304,10 @@ def update_actors(id):
     finally:
         actor.close()
 
-@app.route('/movies/<int:id>', methods=['DELETE'])
-# @requires_auth(permission='delete:movies')
-def delete_movie(id):
-    movie = Movies.query.filter_by(id=id).one_or_none()
-    if not movie:
-        abort(404)
-    try:
-        movie.delete()
-        return jsonify({
-            "success": True,
-            "deleted_movie": movie.id
-        })
-    except:
-        movie.rollback()
-        print(sys.exc_info())
-        return abort(422)
-    finally:
-        movie.close()
 
 
 @app.route('/actors/<int:id>', methods=['DELETE'])
-# @requires_auth(permission='delete:actors')
+@requires_auth(permission='delete:actors')
 def delete_actor(id):
     actor = Actors.query.filter_by(id=id).one_or_none()
     if not actor:
@@ -364,7 +446,13 @@ def error_bad_request(error):
     }), 400
 
 
-
+# use errorhandler to capture AuthError, otherwise flask give 500 error instead of 401 defined in AuthError
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    # print(f"ex: {dir(ex)}")
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

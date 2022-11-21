@@ -6,6 +6,7 @@ from urllib.request import urlopen
 from os import environ as env
 from dotenv import load_dotenv, find_dotenv
 
+#load config from .env
 ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
@@ -183,7 +184,7 @@ def requires_auth(permission=''):
             token = get_token_auth_header()
             payload = verify_decode_jwt(token)
             check_permissions(permission, payload)
-            return f(payload, *args, **kwargs)
+            return f(*args, **kwargs)
 
         return wrapper
 

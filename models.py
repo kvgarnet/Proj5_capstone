@@ -35,6 +35,9 @@ def db_drop_and_create_all():
 
 # Based on https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object
 # implement Movies and Actors models' many2many relationship with 'remuneration' Class
+# defined composite columns' UniqueConstraints based on
+# https://stackoverflow.com/questions/10059345/sqlalchemy-unique-across-multiple-columns
+# to avoid duplicate items creation
 class Remuneration(db.Model):
     __tablename__ = 'remuneration'
     id = db.Column(db.Integer,primary_key=True)
@@ -47,6 +50,7 @@ class Remuneration(db.Model):
 
     def format(self):
         return {
+            'id': self.id,
             'movie_id': self.movie_id,
             'actor_id': self.actor_id,
             'remuneration': self.remuneration

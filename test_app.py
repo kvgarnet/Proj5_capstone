@@ -254,9 +254,10 @@ DB_USER,DB_PASSWORD, "localhost:5432", self.database_name)
         res = self.client().delete(f'/actors/{dummy_actor_id}',
                                    headers={'Authorization': 'Bearer ' + casting_assistant})
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertEqual(data['deleted_actor'], dummy_actor_id)
+        print(f" data is {data}")
+        self.assertEqual(res.status_code, 403)
+        self.assertEqual(data['message'], 'Permission not found.')
+        self.assertEqual(data['success'], False)
 
     # def test_delete_actor_not_found(self):
     #     """Test delete a  not-found actor """

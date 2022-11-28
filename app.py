@@ -452,16 +452,25 @@ def create_app(test_config=None):
             "success": False,
             "error": 403,
             "message": "Permission Denied"
-        }), 400
+        }), 403
 
 
     # use errorhandler to capture AuthError, otherwise flask give 500 error instead of 401 defined in AuthError
     @app.errorhandler(AuthError)
     def handle_auth_error(ex):
-        # print(f"ex: {dir(ex)}")
+        # print(f"ex is: {ex}")
+        # print(f"ex error: {ex.error}")
+        # print(f"ex code: {ex.status_code}")
+        ex.error['success'] = False
+        ex.error['message'] = ex.error['description']
+        ex.error.pop('description')
         response = jsonify(ex.error)
         response.status_code = ex.status_code
         return response
+        # return jsonify({
+        #     "success": False,
+        #     "message": ex.error['description']}
+        # ),ex.status_code
 
     return app
 app = create_app()

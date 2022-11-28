@@ -138,7 +138,7 @@ def create_app(test_config=None):
             # print(f"{date_str}")
         # both fields required
         if not (title and date_str):
-            abort(422)
+            abort(400)
         # check date input format compatibility
         release_date=validate_date(date_str)
         try:
@@ -443,7 +443,15 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 400,
-            "message": "Incorrect input format."
+            "message": "Bad Input format"
+        }), 400
+
+    @app.errorhandler(403)
+    def error_bad_permission(error):
+        return jsonify({
+            "success": False,
+            "error": 403,
+            "message": "Permission Denied"
         }), 400
 
 

@@ -446,13 +446,13 @@ def create_app(test_config=None):
             "message": "Bad Input format"
         }), 400
 
-    @app.errorhandler(403)
-    def error_bad_permission(error):
-        return jsonify({
-            "success": False,
-            "error": 403,
-            "message": "Permission Denied"
-        }), 403
+    # @app.errorhandler(403)
+    # def error_bad_permission(error):
+    #     return jsonify({
+    #         "success": False,
+    #         "error": 403,
+    #         "message": "Permission Denied"
+    #     }), 403
 
 
     # use errorhandler to capture AuthError, otherwise flask give 500 error instead of 401 defined in AuthError

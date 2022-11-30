@@ -10,10 +10,12 @@ DEBUG = True
 
 
 # TODO IMPLEMENT DATABASE URL
-DB_NAME="test_capstone"
-# DB_NAME="capstone"
-# SQLALCHEMY_DATABASE_URI = 'postgresql://jiazhang@localhost:5432/fyyur'
-SQLALCHEMY_DATABASE_URI =f"postgresql://postgres@localhost:5432/{DB_NAME}"
+DB_NAME="capstone"
+DB_USER='postgres'
+DB_PASSWORD='postgres'
+DB_HOST="localhost:5432"
+# SQLALCHEMY_DATABASE_URI =f"postgresql://postgres@localhost:5432/{DB_NAME}"
+SQLALCHEMY_DATABASE_URI =f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # RBAC tokens

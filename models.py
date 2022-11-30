@@ -16,13 +16,11 @@ db = SQLAlchemy()
 
 '''
 setup_db(app)
-    binds a flask application and a SQLAlchemy service
+binds a flask application and a SQLAlchemy service
 '''
-
-
 def setup_db(app,database_path=''):
     # based on proj1, load DB config from config.py
-    # app.config.from_object('config')
+    app.config.from_object('config')
     if database_path:
         app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     db.app = app

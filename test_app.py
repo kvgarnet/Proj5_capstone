@@ -73,7 +73,7 @@ DB_USER,DB_PASSWORD, "localhost:5432", self.database_name)
     def test_post_movie(self):
         """Test post a movie """
         new_movie = {
-            "title": "You've got mails",
+            "title": "Test Post movie",
             "release_date": '12-18-1998'
         }
         res = self.client().post('/movies/new', json=new_movie,

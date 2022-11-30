@@ -21,7 +21,9 @@ The casting app has been deployed to Heroku and is currently working at this lin
 It covers following technical topics :
 *  Python3 coding with flask including: 
     -  Database modeling with `postgres` & `sqlalchemy` (see `models.py`)
-    -  API app to performance CRUD Operations on database with `Flask` (see `app.py`)
+    -  REST API app to 
+       - perform CRUD Operations on database with `Flask` (see `app.py`)
+       - perform on basic login/logout feature to authenticate with Auth0 (see `app.py`)
     -  Automated testing with `Unittest` (see `test_app,py`)
 * Authorization & Role based Authentification with `Auth0` 
     - Auth0 dashboard APP and API setup
@@ -70,17 +72,13 @@ SQLALCHEMY_DATABASE_URI =f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NA
 ```
 
 4. Setup Auth0
-If you only want to test the API (i.e. Project Reviewer), you can
-simply take the existing bearer tokens in `config.py`.
-
-If you already know your way around `Auth0`, just insert your data 
-into `config.py` .
+If you only want to test the API, you can simply take the existing bearer tokens in `config.py`.
 
 FYI: Here are the steps I followed to enable [authentification](#authentification).
 
 5. Run the development server:
   ```bash 
-  $ python app.py
+  $ python3 app.py
   ```
 
 6. (optional) To execute tests, run
@@ -93,7 +91,7 @@ If you choose to run all tests, it should give this response if everything went 
 $ python test_app.py
 .........................
 ----------------------------------------------------------------------
-Ran 25 tests in 18.132s
+Ran 26 tests in 20.894s
 
 OK
 
@@ -558,14 +556,14 @@ All API Endpoints are decorated with Auth0 permissions. To use the project local
 1. Login to https://manage.auth0.com/ 
 2. Click on Applications Tab
 3. Create Application
-4. Give it a name like `Music` and select "Regular Web Application"
-5. Go to Settings and find `domain`. Copy & paste it into config.py => auth0_config['AUTH0_DOMAIN'] (i.e. replace `"example-matthew.eu.auth0.com"`)
+4. Give it a name like `CapstoneAPP` and select "Regular Web Application"
+5. Go to Settings and find `domain`. Copy & paste it into value of  'AUTH0_DOMAIN' of `auth/.env`  (i.e. replace `"kvzhang.us.auth0.com"`)
 6. Click on API Tab 
 7. Create a new API:
-   1. Name: `Music`
-   2. Identifier `Music`
+   1. Name: `CapstoneAPI`
+   2. Identifier `capstone`
    3. Keep Algorithm as it is
-8. Go to Settings and find `Identifier`. Copy & paste it into config.py => auth0_config['API_AUDIENCE'] (i.e. replace `"Example"`)
+8. Go to Settings and find `Identifier`. Copy & paste it into value of 'API_IDENTIFIER' of `auth/.env` (i.e. `"capstone"`)
 
 #### Create Roles & Permissions
 
@@ -590,13 +588,13 @@ They are 3 Roles with distinct permission sets:
   - GET /actors (view:actors): Can see all actors
   - GET /movies (view:movies): Can see all movies
 2. Casting Director (everything from Casting Assistant plus)
-  - POST /actors (create:actors): Can create new Actors
-  - PATCH /actors (edit:actors): Can edit existing Actors
+  - POST /actors (add:actors): Can create new Actors
+  - PATCH /actors (modify:actors): Can edit existing Actors
   - DELETE /actors (delete:actors): Can remove existing Actors from database
-  - PATCH /movies (edit:movies): Can edit existing Movies
-3. Exectutive Dircector (everything from Casting Director plus)
-  - POST /movies (create:movies): Can create new Movies
-  - DELETE /movies (delete:movies): Can remove existing Motives from database
+  - PATCH /movies (modify:movies): Can edit existing Movies
+3. Exectutive Director (everything from Casting Director plus)
+  - POST /movies (add:movies): Can create new Movies
+  - DELETE /movies (delete:movies): Can remove existing Movies from database
 
 In your API Calls, add them as Header, with `Authorization` as key and the `Bearer token` as value. Don´t forget to also
 prepend `Bearer` to the token (seperated by space).

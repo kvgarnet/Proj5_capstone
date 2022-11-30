@@ -98,7 +98,7 @@ def create_app(test_config=None):
     # Capstone API endpoint
     #####
     @app.route('/movies')
-    # @requires_auth(permission='view:movies')
+    @requires_auth(permission='view:movies')
     def movies():
         try:
             movies = Movies.query.order_by('id').all()

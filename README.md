@@ -3,7 +3,7 @@
 ## Content
 
 1. [Motivation](#motivation)
-2. [Setup Project ](#setup project)
+2. [Setup Project](#setup project)
 3. [API Documentation](#api)
 4. [Authentification](#authentification)
 
@@ -33,7 +33,7 @@ It covers following technical topics :
 * Deployment on `Heroku`
 
 <a name="setup project"></a>
-## Overview
+## Setup Overview
 This app can be deployed in two ways:
 - locally for easy POC 
 - heroku 
@@ -58,9 +58,8 @@ and version 14.5 of [postgres](https://www.postgresql.org/download/) installed .
 ```bash
 $ pip install -r requirements.txt
 ```
-3. Change database config so it can connect to your local postgres database
-- Open `config.py` 
-- Update based on your configuration
+3. Change database config so it can connect to your local postgres database.
+Update based on your configuration like:
  ```python
 db_name="capstone"
 db_user='postgres'
@@ -81,6 +80,7 @@ If you only want to test API, you can simply take the existing bearer tokens in 
   $ python3 app.py
   ```
 access it on http://127.0.0.1:8080
+
 6. init database: create database, tables and seed init data
  NOTE init_db.py WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 ,ONLY NECESSARY ON FIRST RUN
@@ -89,9 +89,17 @@ access it on http://127.0.0.1:8080
   $ createdb capstone
   $ python3 init_db.py --env local_prod
   ```
-7. execute tests
+7. execute tests functions
 
-configure test DB in `config.py`,create db and init it 
+configure test DB vars like step 3 in `config.py`,like:
+* note: we use python-dotenv as way to import them as env vars
+```bash
+test_db_name = getenv("TEST_DATABASE_NAME")
+test_db_user=getenv("DATABASE_USER")
+test_db_password = getenv("DATABASE_PASS")
+test_db_path = f"postgresql://{test_db_user}:{test_db_password}@localhost:5432/{test_db_name }"
+```
+create db and init it 
 ```bash 
 $ createdb test_capstone
 $ python3 init_db.py --env local_test
@@ -255,8 +263,7 @@ will return
 Insert new actor into database.
 
 ```bash
-$
-curl -X POST https://kvzhang-capstone-1213.herokuapp.com/actors/new \
+$curl -X POST https://kvzhang-capstone-1213.herokuapp.com/actors/new \
  -H "Authorization: Bearer XXXX" \
      -H "Content-Type:application/json" \
  --data '{"name":"tom","age":42,"gender":"male"}'
@@ -714,6 +721,6 @@ prepend `Bearer` to the token (seperated by space).
 For example: (Bearer token for `Executive Director`)
 ```js
 {
-    "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik16azVRVUk0TXpSR04wSXhOVU13TkRrME16QXdNMFpHTmtFMU1VWXdPRUpCTmpnMFJrVTBSZyJ9.eyJpc3MiOiJodHRwczovL2ZzbmQtbWF0dGhldy5ldS5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NWU0N2VmYzc2N2YxYmEwZWJiNDIwMTYzIiwiYXVkIjoiTXVzaWMiLCJpYXQiOjE1ODE4NjI0NjksImV4cCI6MTU4MTg2OTY2OSwiYXpwIjoiVGh2aG9mdmtkRTQwYlEzTkMzSzdKdFdSSzdSMzFOZDciLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImNyZWF0ZTphY3RvcnMiLCJjcmVhdGU6bW92aWVzIiwiZGVsZXRlOmFjdG9ycyIsImRlbGV0ZTptb3ZpZXMiLCJlZGl0OmFjdG9ycyIsImVkaXQ6bW92aWVzIiwicmVhZDphY3RvcnMiLCJyZWFkOm1vdmllcyJdfQ.iScamWOFNx9pjiVZhsvPzDoRi6EraZaxWg-WMj80HNW_-dchkOymnKA7OOhPQ8svLc9-wViLlCT-ySnupZ-209cIBVHSA_slncSP-lzEM6NKbBmDEETTQ1oxv2jTH-JL72eLhyAWUsmSIZDmEab1hln1yWEN7mUnn0nZJfxCRCs89h5EGJzXS2v8PbAjq9Mu7wFsrioEMx_PGWzSM0r5WIrKBvpXRy0Jm-vssZl4M1akDHIL5Shcfp_Bfnarc2OLOMvdQVHVDEWhrbFSnfCENLDxkcmB18VnOedJAuY_C88YRUfY2wQAOPux8RVuqIb5KxTg4YP7kiDcBUKXEnhL9A"
+    "Authorization": "Bearer XXXXXX"
 }
 ```

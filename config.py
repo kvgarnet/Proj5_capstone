@@ -19,9 +19,12 @@ DEBUG = True
 
 # local production DB info
 # lower case for db_* , otherwise it will be picked up by flask app.config with useless configuration
-db_name="capstone"
-db_user='postgres'
-db_password='postgres'
+# db_host='capstone'
+# db_user='postgres'
+# db_password='postgres'
+db_name=getenv("DATABASE_NAME")
+db_user=getenv("DATABASE_USER")
+db_password = getenv("DATABASE_PASS")
 db_host="localhost:5432"
 db_path = f"postgresql://{db_user}:{db_password}@{db_host}/{db_name}"
 SQLALCHEMY_DATABASE_URI =db_path

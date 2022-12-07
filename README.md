@@ -10,12 +10,12 @@
 <a name="motivation"></a>
 ## Motivations & Covered Topics
 ### What is Capstone
-This is a flask REST API for final project of `Udacity-Full-Stack-Nanodegree`.
+This is a flask REST API service for final project of `Udacity-Full-Stack-Nanodegree`.
 This app helps a Casting Agency models a company that is responsible for creating
-movies and managing and assigning actors to those movies. besides, it also manages 
-remuneration of actors mapping between movies and actors
+movies and managing and assigning actors to those movies. Besides, it also manages 
+actors' remuneration relationship between movies and actors
 ### How can I access the app?
-The casting app has been deployed to Heroku and is currently working at this link:
+The casting app has been deployed to Heroku at this link:
 https://kvzhang-capstone-1213.herokuapp.com/
 - Click **login** link to log in, app will return JWT based on the roles predefined on auth0, which I saved in in config.py for easy test
 - Click **logout** link to log out.
@@ -34,9 +34,9 @@ It covers following technical topics :
 
 <a name="setup project"></a>
 ## Overview
-This app can be run in two ways:
+This app can be deployed in two ways:
 - locally for easy POC 
-- deployed via heroku 
+- heroku 
 
 we will cover both ways below. 
 
@@ -48,7 +48,7 @@ You also need an account with Auth0, an authentication service.
 and version 14.5 of [postgres](https://www.postgresql.org/download/) installed .
 
 1. Initialize and activate a virtualenv:
-`cd` into project root folder (with all app files) 
+`cd` into project root folder 
   ```bash
   $ python3 -mvenv proj5_venv  
   $ source proj5_venv/bin/activate
@@ -90,7 +90,7 @@ If you only want to test API, you can simply take the existing bearer tokens in 
   ```
 7. execute tests
 
-configure test DB in config.py,create db and init it 
+configure test DB in `config.py`,create db and init it 
 ```bash 
 $ createdb test_capstone
 $ python3 init_db.py --env local_test
@@ -114,8 +114,7 @@ OK
   - Procfile
   - runtime.txt
 4. based on section 6, deployed to heroku as below steps
-   
-   **note: since heroku does not support free plan, we have to subscribe a paid plan for dynos and postgress DB**
+   - **note: since heroku does not support free plan, we have to subscribe a paid plan for dynos and postgress DB**
  ```bash
 #init heroku
 heroku login -i
@@ -142,20 +141,15 @@ Here you can find all existing endpoints, which methods can be used, how to work
 Additionally, common pitfalls & error messages are explained, if applicable.
 
 ### Base URL
-
 **_https://kvzhang-capstone-1213.herokuapp.com_**
-
 ### Authentification
-
 Please see [API Authentification](#authentification-bearer)
-
-
 ### How to work with each endpoint
 Prerequisites:
 On auth0 dashboard, RBAC roles needs to be ready and 3 users assigned to the roles needs to be authenticated to access
-different endpoints with different JWT access token.
+different endpoints with different JWT access token.see auth0 configration section for details
 
-If you only want to test API, you can simply take the existing bearer tokens in `config.py`.
+To test API, you can simply take the existing bearer tokens in `config.py`.
 
 **Authorication Endpoints**
 
@@ -189,7 +183,7 @@ Click on a link to directly get to the ressource.
    3. [DELETE /movies](#delete-movies)
    4. [PATCH /movies](#patch-movies)
 
-Each ressource documentation is clearly structured:
+Each resource documentation is structured as below:
 1. Description in a few words
 2. `curl` example that can directly be used in terminal
 3. More descriptive explanation of input & outputs.
@@ -201,11 +195,11 @@ Each ressource documentation is clearly structured:
 # <a name="get-actors"></a>
 ### 1. GET /actors
 
-Query  actors.
+Query all actors.
 
 ```bash
 $ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/actors \  
- -H "Accept: application/json" -H "Authorization: Bearer xxxx"
+  -H "Authorization: Bearer xxxx"
 ```
 **Note**: if you like to check via browsers, use https://modheader.com/ to add Token got from /login endpoint 
 - Fetches a list of dictionaries of examples in which the keys are the ids with all available fields
@@ -233,25 +227,7 @@ $ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/actors \
             ],
             "name": "Meg Ryan"
         },
-        {
-            "age": 66,
-            "gender": "male",
-            "id": 2,
-            "movies": [
-                "You've got mails",
-                "Forrest Gump"
-            ],
-            "name": "Tom Hanks"
-        },
-        {
-            "age": 56,
-            "gender": "female",
-            "id": 3,
-            "movies": [
-                "Forrest Gump"
-            ],
-            "name": "Robin Wright"
-        }
+        ......
     ],
     "success": true
 }
@@ -260,11 +236,10 @@ $ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/actors \
 If you try fetch an endpoint which does not have any actors, you will encounter an error which looks like this:
 
 ```bash
-$ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/no_actors
+$ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/no_actors \
+  -H "Authorization: Bearer xxxx"
 ```
-
 will return
-
 ```js
 {
 "error": 404,
@@ -325,7 +300,7 @@ it will throw a `403` error:
 }
 }
 ```
-if you try to create a new actor without complete input, it will thorow a '400' error like:
+if you try to create a new actor without complete input, it will throw a '400' error like:
 ```js
 {
   "error": 400,
@@ -427,6 +402,7 @@ If you try to delete actor with an invalid id, it will throw an `404`error:
 
 ```bash
 $ curl -X DELETE https://kvzhang-capstone-1213.herokuapp.com/actors/125
+ -H "Authorization: Bearer xxx"
 ```
 
 will return
@@ -545,7 +521,7 @@ $ curl -X POST https://kvzhang-capstone-1213.herokuapp.com/movies/new \
 
 ```
 #### Errors
-If you try to create a new movie without a requiered field like `title`,
+If you try to create a new movie without a required field like `title`,
 it will throw a `400` error:
 
 ```bash
@@ -671,18 +647,24 @@ All API Endpoints are decorated with Auth0 permissions. To use the project local
 
 ### Auth0 for locally use
 #### Create an App & API
-
+- create APP
 1. Login to https://manage.auth0.com/ 
 2. Click on Applications Tab
 3. Create Application
 4. Give it a name like `CapstoneAPP` and select "Regular Web Application"
-5. Go to Settings and find `domain`. Copy & paste it into value of  'AUTH0_DOMAIN' of `auth/.env`  (i.e. replace `"kvzhang.us.auth0.com"`)
-6. Click on API Tab 
-7. Create a new API:
+5. Go to Settings
+   - find `domain`. Copy & paste it into value of  'AUTH0_DOMAIN' of `auth/.env`  (i.e. replace `"kvzhang.us.auth0.com"`)
+   - find `Client id`. Copy & paste it into value of  'AUTH0_CLIENT_ID' of `auth/.env`     
+   - find `Client Secret`. Copy & paste it into value of  'AUTH0_CLIENT_SECRET' of `auth/.env`
+6. set callback URL based on the host and endpoints(app.py), e.g. http://127.0.0.1:8080/callback
+7. set logout URL based on the host and endpoints(app.py), e.g. http://127.0.0.1:8080
+- create API
+1. Click on API Tab 
+2. Create a new API:
    1. Name: `CapstoneAPI`
    2. Identifier `capstone`
    3. Keep Algorithm as it is
-8. Go to Settings and find `Identifier`. Copy & paste it into value of 'API_IDENTIFIER' of `auth/.env` (i.e. `"capstone"`)
+3. Go to Settings and find `Identifier`. Copy & paste it into value of 'API_IDENTIFIER' of `auth/.env` (i.e. `"capstone"`)
 
 #### Create Roles & Permissions
 
@@ -698,6 +680,14 @@ All API Endpoints are decorated with Auth0 permissions. To use the project local
 # <a name="authentification-bearer"></a>
 ### Auth0 to use existing API
 If you want to access the real, temporary API, bearer tokens for all 3 roles are included in the `config.py` file.
+
+### Auth0 for heroku
+#### Create an App 
+- create APP
+only difference from auth0 setup for local use is use the heroku URL for callback and logout URL
+
+- create API
+do not need to recreate API, use above API 
 
 ## Existing Roles
 

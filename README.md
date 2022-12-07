@@ -80,9 +80,17 @@ FYI: Here are the steps I followed to enable [authentification](#authentificatio
   ```bash 
   $ python3 app.py
   ```
+6. init database: create database, tables and seed init data
+ NOTE init_db.py WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
+,ONLY NECESSARY ON FIRST RUN
 
-6. (optional) To execute tests, run
+  ```bash 
+  $  createdb capstone
+  $ python3 init_db.py
+  ```
+7. execute tests,  
 ```bash 
+$ createdb test_capstone
 $ python test_app.py
 ```
 If you choose to run all tests, it should give this response if everything went fine:
@@ -105,7 +113,7 @@ Additionally, common pitfalls & error messages are explained, if applicable.
 
 ### Base URL
 
-**_https://artist-capstone-fsnd-matthew.herokuapp.com_**
+**_https://kvzhang-capstone-1213.herokuapp.com_**
 
 ### Authentification
 

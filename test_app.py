@@ -3,20 +3,18 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 from app import create_app
 from models import setup_db,Movies,Actors
-from auth.settings import TEST_DB_NAME, DB_USER, DB_PASSWORD
+from config import test_db_path
 from datetime import date
 from config import casting_assistant,casting_director,executive_producer
 
-# print(f"test db is: {TEST_DB_NAME}")
+# print(f"test db is: {test_db_path}")
 class CapstoneTestCase(unittest.TestCase):
     """This class represents capstone test case"""
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app()
         self.client = self.app.test_client
-        self.database_name = TEST_DB_NAME
-        self.database_path = "postgresql://{}:{}@{}/{}".format(
-DB_USER,DB_PASSWORD, "localhost:5432", self.database_name)
+        self.database_path = test_db_path
         setup_db(self.app, self.database_path)
         # db_drop_and_create_all()
         # run python init_db.py to create table and seed init data
@@ -111,7 +109,7 @@ DB_USER,DB_PASSWORD, "localhost:5432", self.database_name)
 
     def test_update_movie(self):
         res = self.client().patch(
-            '/movies/4',
+            '/movies/30',
             json={'title': 'Director Updated movie'},
             headers={'Authorization': 'Bearer ' + casting_director})
         data = json.loads(res.data)

@@ -1,22 +1,38 @@
-import os
-SECRET_KEY = os.urandom(32)
+"""Flask configuration."""
+from dotenv import load_dotenv
+from os import path,getenv
 # Grabs the folder where the script runs.
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = path.abspath(path.dirname(__file__))
+load_dotenv(path.join(basedir, '.env'))
+
+# Define SECRET_KEY for app.config
+# SECRET_KEY set with os.urandom(32) will cause app hit http 500(ISE) during authentication on heroku deployment, use fix string to fix it
+# https://stackoverflow.com/questions/30984622/flask-session-not-persistent-across-requests-in-flask-app-with-gunicorn-on-herok
+#SECRET_KEY = os.urandom(32)
+#APP_SECRET_KEY=ALongRandomlyGeneratedString
+SECRET_KEY=getenv("APP_SECRET_KEY")
 
 # Enable debug mode.
 DEBUG = True
-
 # Connect to the database
 
 
-# TODO IMPLEMENT DATABASE URL
-DB_NAME="capstone"
-DB_USER='postgres'
-DB_PASSWORD='postgres'
-DB_HOST="localhost:5432"
-# SQLALCHEMY_DATABASE_URI =f"postgresql://postgres@localhost:5432/{DB_NAME}"
-SQLALCHEMY_DATABASE_URI =f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+# local production DB info
+# lower case for db_* , otherwise it will be picked up by flask app.config with useless configuration
+db_name="capstone"
+db_user='postgres'
+db_password='postgres'
+db_host="localhost:5432"
+db_path = f"postgresql://{db_user}:{db_password}@{db_host}/{db_name}"
+SQLALCHEMY_DATABASE_URI =db_path
+# SQLALCHEMY_DATABASE_URI =f"postgresql://{db_user}:{db_password}@{db_host}/{db_name}"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+#test db env
+test_db_name = getenv("TEST_DATABASE_NAME")
+test_db_user=getenv("DATABASE_USER")
+test_db_password = getenv("DATABASE_PASS")
+test_db_path = f"postgresql://{test_db_user}:{test_db_password}@localhost:5432/{test_db_name }"
 
 # RBAC tokens
 casting_assistant="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InVSaVptcFJxUHR1eW1nSWEwRktXMyJ9.eyJpc3MiOiJodHRwczovL2t2emhhbmcudXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDYzNDEzN2Q4OGQzZWY2NjJlMDI4MjYyZSIsImF1ZCI6WyJjYXBzdG9uZSIsImh0dHBzOi8va3Z6aGFuZy51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjY5NjA2ODg0LCJleHAiOjE2NzAyMTE2ODQsImF6cCI6Ik5RT1A0ZUN4b2JJWXNDSFkzaFhkbFpZdEhUMkNCVTdiIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCIsInBlcm1pc3Npb25zIjpbInZpZXc6YWN0b3JzIiwidmlldzptb3ZpZXMiXX0.S8bBZoxWF-atfyNUhZ5DAZrpM6p6e0ETK6gzICDZ7doXNFEZmxAC34Hhqs42uoumXVzcKNQRgIcaZhyWKzCCcrhlGUlGxcpqH1quU1F-xfG70IBMhW4OnkZJCQSzcqvV2XlV8Q9YFxtTTV48G__cY3K5pP34407qv2clUerp0bTtYZQcZBPLMly8fTrOhKgwThEP9J0AWHnzIRGUxvhImLJ1AWgPoJG35MVR8xKCnEYInTuV_Qx3USjzKaWVBL3Vj7wUtnfkawESHJe26iEFXdHUuhkXgEir79-YzfNbpbA4IceXCv3BPCoILGbhDl-2oQekb4--hRe6EfWsQI10LA"

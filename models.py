@@ -8,23 +8,24 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import  UniqueConstraint
 import json
 
-# database_path = os.environ['DATABASE_URL']
-# if database_path.startswith("postgres://"):
-#   database_path = database_path.replace("postgres://", "postgresql://", 1)
+database_path = os.getenv('DATABASE_URL','')
+if database_path.startswith("postgres://"):
+  database_path = database_path.replace("postgres://", "postgresql://", 1)
 
 db = SQLAlchemy()
 
 '''
-setup_db(app)
 binds a flask application and a SQLAlchemy service
 '''
-def setup_db(app,database_path=''):
+def setup_db(app,database_path=database_path):
     # based on proj1, load DB config from config.py
-    app.config.from_object('config')
+    # app.config.from_object('config')
+    # print(f"database_path is: {database_path}")
     if database_path:
         app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     db.app = app
     db.init_app(app)
+    # print(f"app.config is: {app.config}")
 
 
 # based on project 3 , reinit db

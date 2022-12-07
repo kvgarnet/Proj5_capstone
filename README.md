@@ -80,6 +80,7 @@ If you only want to test API, you can simply take the existing bearer tokens in 
   ```bash 
   $ python3 app.py
   ```
+access it on http://127.0.0.1:8080
 6. init database: create database, tables and seed init data
  NOTE init_db.py WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 ,ONLY NECESSARY ON FIRST RUN
@@ -645,7 +646,7 @@ will return
 
 All API Endpoints are decorated with Auth0 permissions. To use the project locally, you need to config Auth0 accordingly
 
-### Auth0 for locally use
+### Setup Auth0 for locally use
 #### Create an App & API
 - create APP
 1. Login to https://manage.auth0.com/ 
@@ -675,15 +676,17 @@ All API Endpoints are decorated with Auth0 permissions. To use the project local
 4. Go back to the API Tab and find your newly created API. Click on Permissions.
 5. Create & assign all needed permissions accordingly 
 6. After you created all permissions this app needs, go back to `Users and Roles` => `Roles` and select the role you recently created.
-6. Under `Permissions`, assign all permissions you want this role to have. 
+7. Under `Permissions`, assign all permissions you want this role to have. 
+8. Under `Users`, assign specific users you want with this role. 
 
 # <a name="authentification-bearer"></a>
 ### Auth0 to use existing API
 If you want to access the real, temporary API, bearer tokens for all 3 roles are included in the `config.py` file.
 
-### Auth0 for heroku
+### Setup Auth0 for heroku
 #### Create an App 
 - create APP
+Use same steps as setup for locally
 only difference from auth0 setup for local use is use the heroku URL for callback and logout URL
 
 - create API

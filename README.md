@@ -3,20 +3,22 @@
 ## Content
 
 1. [Motivation](#motivation)
-2. [Start Project locally](#start-locally)
+2. [Setup Project ](#setup project)
 3. [API Documentation](#api)
 4. [Authentification](#authentification)
 
 <a name="motivation"></a>
 ## Motivations & Covered Topics
-### what is Capstone
+### What is Capstone
 This is a flask REST API for final project of `Udacity-Full-Stack-Nanodegree`.
 This app helps a Casting Agency models a company that is responsible for creating
 movies and managing and assigning actors to those movies. besides, it also manages 
 remuneration of actors mapping between movies and actors
 ### How can I access the app?
 The casting app has been deployed to Heroku and is currently working at this link:
-
+https://kvzhang-capstone-1213.herokuapp.com/
+- Click **login** link to log in, app will return JWT based on the roles predefined on auth0, which I saved in in config.py for easy test
+- Click **logout** link to log out.
 ### Tech topics
 It covers following technical topics :
 *  Python3 coding with flask including: 
@@ -30,16 +32,23 @@ It covers following technical topics :
     - code integration with auth0 APP and API to handle the authentication login, (see `auth/auth.py`) 
 * Deployment on `Heroku`
 
-<a name="start-locally"></a>
-## Start Project locally
+<a name="setup project"></a>
+## Overview
+This app can be run in two ways:
+- locally for easy POC 
+- deployed via heroku 
 
-`cd` into project root folder (with all app files) before following the setup steps.
-in the project, I validated 3.8.9 version of [Python 3](https://www.python.org/downloads/)
-and version 14.5 of [postgres](https://www.postgresql.org/download/) installed on your machine.
+we will cover both ways below. 
 
-To start and run the local development server,
+### Setup Project locally
+To access the app locally, you need a database, a virtual environment, dependencies installed, and environment variables set up. 
+You also need an account with Auth0, an authentication service.
+
+ I validated 3.8.9/15 version of [Python 3](https://www.python.org/downloads/)
+and version 14.5 of [postgres](https://www.postgresql.org/download/) installed .
 
 1. Initialize and activate a virtualenv:
+`cd` into project root folder (with all app files) 
   ```bash
   $ python3 -mvenv proj5_venv  
   $ source proj5_venv/bin/activate
@@ -49,32 +58,23 @@ To start and run the local development server,
 ```bash
 $ pip install -r requirements.txt
 ```
-
-Running this project locally means that it can´t access `Herokus` env variables.
-To fix this, you need to edit a few informations in `config.py`, so it can
-correctly connect to a local database
-
 3. Change database config so it can connect to your local postgres database
 - Open `config.py` 
-- Here you can see this dict:
+- Update based on your configuration
  ```python
-database_setup = {
-    "database_name_production" : "agency",
-    "user_name" : "postgres", # default postgres user name
-    "password" : "testpassword123", # if applicable. If no password, just type in None
-    "port" : "localhost:5432" # default postgres port
-}
-DB_NAME="capstone"
-DB_USER='postgres'
-DB_PASSWORD='postgres'
-DB_HOST="localhost:5432"
-SQLALCHEMY_DATABASE_URI =f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+db_name="capstone"
+db_user='postgres'
+db_password='postgres'
+db_host="localhost:5432"
+SQLALCHEMY_DATABASE_URI =f"postgresql://{db_user}:{db_password}@{db_host}/{db_name}"
 ```
 
-4. Setup Auth0
-If you only want to test the API, you can simply take the existing bearer tokens in `config.py`.
+4. Setup Auth0 
 
-FYI: Here are the steps I followed to enable [authentification](#authentification).
+See [Authentification](#authentification) for details 
+
+If you only want to test API, you can simply take the existing bearer tokens in `config.py`.
+
 
 5. Run the development server:
   ```bash 
@@ -85,15 +85,17 @@ FYI: Here are the steps I followed to enable [authentification](#authentificatio
 ,ONLY NECESSARY ON FIRST RUN
 
   ```bash 
-  $  createdb capstone
-  $ python3 init_db.py
+  $ createdb capstone
+  $ python3 init_db.py --env local_prod
   ```
-7. execute tests,  
+7. execute tests
+
+configure test DB in config.py,create db and init it 
 ```bash 
 $ createdb test_capstone
-$ python test_app.py
+$ python3 init_db.py --env local_test
 ```
-If you choose to run all tests, it should give this response if everything went fine:
+it should give this response if everything went fine:
 
 ```bash
 $ python test_app.py
@@ -104,6 +106,34 @@ Ran 26 tests in 20.894s
 OK
 
 ```
+### Deploy Project Heroku
+1. clone the github repo in a new folder
+2. remove existing .git folder
+3. based on requirement of heroku deployment, add below files
+   reference: https://devcenter.heroku.com/articles/getting-started-with-python
+  - Procfile
+  - runtime.txt
+4. based on section 6, deployed to heroku as below steps
+   
+   **note: since heroku does not support free plan, we have to subscribe a paid plan for dynos and postgress DB**
+ ```bash
+#init heroku
+heroku login -i
+git init
+# create heroku app and DB
+heroku create myapp-${RANDOM} --buildpack heroku/python 
+heroku addons:create heroku-postgresql:mini --app {app_created_last_step}
+#list DATABASE_URL
+heroku config --app {app_created_last_step}
+export DATABASE_URL="***"
+# add DATABASE_URL in heroku dashboard UI
+# commit and push to heroku git repo
+git add .
+git commit -am "first commit"
+git push heroku main
+# click the heroku app url to verify application
+``` 
+
 ## API Documentation
 <a name="api"></a>
 
@@ -119,17 +149,32 @@ Additionally, common pitfalls & error messages are explained, if applicable.
 
 Please see [API Authentification](#authentification-bearer)
 
-### Available Endpoints
-
-Here is a short table about which ressources exist and which method you can use on them.
-
-                          Allowed Methods
-       Endpoints    |  GET |  POST |  DELETE | PATCH  |
-                    |------|-------|---------|--------|
-      /actors       |  [x] |  [x]  |   [x]   |   [x]  |   
-      /movies       |  [x] |  [x]  |   [x]   |   [x]  |   
 
 ### How to work with each endpoint
+Prerequisites:
+On auth0 dashboard, RBAC roles needs to be ready and 3 users assigned to the roles needs to be authenticated to access
+different endpoints with different JWT access token.
+
+If you only want to test API, you can simply take the existing bearer tokens in `config.py`.
+
+**Authorication Endpoints**
+
+#### GET /login
+- Redirects the user to the Auth0 login page, where the user can log in or sign up
+- Roles authorized: all users
+- Sample: ```curl http://127.0.0.1:8080/login```
+
+#### GET /post-login
+- Handles the response from the access token endpoint and stores the user's information in a Flask session
+- Roles authorized: casting assistant, casting_director,executive producer
+- Sample: ```curl http://127.0.0.1:8080/callback```
+
+#### GET /logout
+- Clears the user's session and logs them out
+- Roles authorized: all users
+- Sample: ```curl http://127.0.0.1:8080/logout```
+
+**Business Endpoints**
 
 Click on a link to directly get to the ressource.
 
@@ -152,55 +197,79 @@ Each ressource documentation is clearly structured:
 5. Example Response.
 6. Error Handling (`curl` command to trigger error + error response)
 
+
 # <a name="get-actors"></a>
 ### 1. GET /actors
 
-Query paginated actors.
+Query  actors.
 
 ```bash
-$ curl -X GET https://artist-capstone-fsnd-matthew.herokuapp.com/actors?page1
+$ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/actors \  
+ -H "Accept: application/json" -H "Authorization: Bearer xxxx"
 ```
+**Note**: if you like to check via browsers, use https://modheader.com/ to add Token got from /login endpoint 
 - Fetches a list of dictionaries of examples in which the keys are the ids with all available fields
-- Request Arguments: 
-    - **integer** `page` (optional, 10 actors per page, defaults to `1` if not given)
-- Request Headers: **None**
+- Request Headers: **Authorization Header**
 - Requires permission: `read:actors`
 - Returns: 
-  1. List of dict of actors with following fields:
+  1. List of dict of 'actors' with following fields:
       - **integer** `id`
       - **string** `name`
       - **string** `gender`
       - **integer** `age`
+      - **list** `movies` (list of movie names that actor starred in)
   2. **boolean** `success`
 
 #### Example response
 ```js
 {
-  "actors": [
-    {
-      "age": 25,
-      "gender": "Male",
-      "id": 1,
-      "name": "Matthew"
-    }
-  ],
-  "success": true
+    "actors": [
+        {
+            "age": 62,
+            "gender": "female",
+            "id": 1,
+            "movies": [
+                "You've got mails"
+            ],
+            "name": "Meg Ryan"
+        },
+        {
+            "age": 66,
+            "gender": "male",
+            "id": 2,
+            "movies": [
+                "You've got mails",
+                "Forrest Gump"
+            ],
+            "name": "Tom Hanks"
+        },
+        {
+            "age": 56,
+            "gender": "female",
+            "id": 3,
+            "movies": [
+                "Forrest Gump"
+            ],
+            "name": "Robin Wright"
+        }
+    ],
+    "success": true
 }
 ```
 #### Errors
-If you try fetch a page which does not have any actors, you will encounter an error which looks like this:
+If you try fetch an endpoint which does not have any actors, you will encounter an error which looks like this:
 
 ```bash
-$ curl -X GET https://artist-capstone-fsnd-matthew.herokuapp.com/actors?page123124
+$ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/no_actors
 ```
 
 will return
 
 ```js
 {
-  "error": 404,
-  "message": "no actors found in database.",
-  "success": false
+"error": 404,
+"message": "Resource Not Found",
+"success": false
 }
 ```
 
@@ -210,41 +279,57 @@ will return
 Insert new actor into database.
 
 ```bash
-$ curl -X POST https://artist-capstone-fsnd-matthew.herokuapp.com/actors
+$
+curl -X POST https://kvzhang-capstone-1213.herokuapp.com/actors/new \
+ -H "Authorization: Bearer XXXX" \
+     -H "Content-Type:application/json" \
+ --data '{"name":"tom","age":42,"gender":"male"}'
 ```
 
 - Request Arguments: **None**
-- Request Headers: (_application/json_)
-       1. **string** `name` (<span style="color:red">*</span>required)
-       2. **integer** `age` (<span style="color:red">*</span>required)
-       3. **string** `gender`
+- Request Headers: 
+    - (_application/json_)
+        1. **string** `name` 
+        2. **integer** `age` 
+        3. **string** `gender`
+    - **Authorization Header**
 - Requires permission: `create:actors`
 - Returns: 
-  1. **integer** `id from newly created actor`
+  1. List of dict of 'actors' created
   2. **boolean** `success`
 
 #### Example response
 ```js
 {
-    "created": 5,
-    "success": true
+  "actor": [
+    {
+      "age": 42,
+      "gender": "male",
+      "id": 4,
+      "movies": [],
+      "name": "tom"
+    }
+  ],
+  "success": true
 }
-
 ```
 #### Errors
-If you try to create a new actor without a requiered field like `name`,
-it will throw a `422` error:
-
-```bash
-$ curl -X GET https://artist-capstone-fsnd-matthew.herokuapp.com/actors?page123124
-```
-
-will return
+If you try to create a new actor without a required permission
+it will throw a `403` error:
 
 ```js
 {
-  "error": 422,
-  "message": "no name provided.",
+  "code": "unauthorized",
+  "message": "Permission not found.",
+  "success": false
+}
+}
+```
+if you try to create a new actor without complete input, it will thorow a '400' error like:
+```js
+{
+  "error": 400,
+  "message": "Bad Input format",
   "success": false
 }
 ```
@@ -255,19 +340,23 @@ will return
 Edit an existing Actor
 
 ```bash
-$ curl -X PATCH https://artist-capstone-fsnd-matthew.herokuapp.com/actors/1
+$ curl -X PATCH https://kvzhang-capstone-1213.herokuapp.com/actors/5
+ -H "Authorization: Bearer XXXX" \
+     -H "Content-Type:application/json" \
+ --data '{"name":"TomLeeJones","age":42,"gender":"male"}'
 ```
 
 - Request Arguments: **integer** `id from actor you want to update`
-- Request Headers: (_application/json_)
-       1. **string** `name` 
-       2. **integer** `age` 
-       3. **string** `gender`
+- Request Headers: 
+    - (_application/json_)
+        1. **string** `name`
+        2. **integer** `age`
+        3. **string** `gender`
+    - **Authorization Header**
 - Requires permission: `edit:actors`
 - Returns: 
-  1. **integer** `id from updated actor`
-  2. **boolean** `success`
-  3. List of dict of actors with following fields:
+  1. **boolean** `success`
+  2. List of dict of actors with following fields:
       - **integer** `id`
       - **string** `name`
       - **string** `gender`
@@ -276,23 +365,26 @@ $ curl -X PATCH https://artist-capstone-fsnd-matthew.herokuapp.com/actors/1
 #### Example response
 ```js
 {
-    "actor": [
-        {
-            "age": 30,
-            "gender": "Other",
-            "id": 1,
-            "name": "Test Actor"
-        }
-    ],
-    "success": true,
-    "updated": 1
+  "actor": [
+    {
+      "age": 42,
+      "gender": "male",
+      "id": 4,
+      "movies": [],
+      "name": "TomLeeJones"
+    }
+  ],
+  "success": true
 }
 ```
 #### Errors
 If you try to update an actor with an invalid id it will throw an `404`error:
 
 ```bash
-$ curl -X PATCH https://artist-capstone-fsnd-matthew.herokuapp.com/actors/125
+$ curl -X PATCH https://kvzhang-capstone-1213.herokuapp.com/actors/125
+ -H "Authorization: Bearer XXXX" \
+     -H "Content-Type:application/json" \
+ --data '{"name":"TomLeeJones","age":42,"gender":"male"}'
 ```
 
 will return
@@ -300,16 +392,7 @@ will return
 ```js
 {
   "error": 404,
-  "message": "Actor with id 125 not found in database.",
-  "success": false
-}
-```
-Additionally, trying to update an Actor with already existing field values will result in an `422` error:
-
-```js
-{
-  "error": 422,
-  "message": "provided field values are already set. No update needed.",
+  "message": "Resource Not Found",
   "success": false
 }
 ```
@@ -320,11 +403,13 @@ Additionally, trying to update an Actor with already existing field values will 
 Delete an existing Actor
 
 ```bash
-$ curl -X DELETE https://artist-capstone-fsnd-matthew.herokuapp.com/actors/1
+$ curl -X DELETE https://kvzhang-capstone-1213.herokuapp.com/actors/4 \ 
+ -H "Authorization: Bearer xxx"
 ```
 
 - Request Arguments: **integer** `id from actor you want to delete`
-- Request Headers: `None`
+- Request Headers: 
+    - **Authorization Header**
 - Requires permission: `delete:actors`
 - Returns: 
   1. **integer** `id from deleted actor`
@@ -333,16 +418,15 @@ $ curl -X DELETE https://artist-capstone-fsnd-matthew.herokuapp.com/actors/1
 #### Example response
 ```js
 {
-    "deleted": 5,
-    "success": true
+  "deleted_actor": 4,
+  "success": true
 }
-
 ```
 #### Errors
 If you try to delete actor with an invalid id, it will throw an `404`error:
 
 ```bash
-$ curl -X DELETE https://artist-capstone-fsnd-matthew.herokuapp.com/actors/125
+$ curl -X DELETE https://kvzhang-capstone-1213.herokuapp.com/actors/125
 ```
 
 will return
@@ -350,7 +434,7 @@ will return
 ```js
 {
   "error": 404,
-  "message": "Actor with id 125 not found in database.",
+  "message": "Resource Not Found",
   "success": false
 }
 ```
@@ -358,20 +442,19 @@ will return
 # <a name="get-movies"></a>
 ### 5. GET /movies
 
-Query paginated movies.
 
 ```bash
-$ curl -X GET https://artist-capstone-fsnd-matthew.herokuapp.com/movies?page1
+$ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/movies \
+ -H "Authorization: Bearer XXX"
 ```
 - Fetches a list of dictionaries of examples in which the keys are the ids with all available fields
-- Request Arguments: 
-    - **integer** `page` (optional, 10 movies per page, defaults to `1` if not given)
-- Request Headers: **None**
+- Request Headers: 
+    - **Authorization Header**
 - Requires permission: `read:movies`
 - Returns: 
   1. List of dict of movies with following fields:
       - **integer** `id`
-      - **string** `name`
+      - **string** `title`
       - **date** `release_date`
   2. **boolean** `success`
 
@@ -380,20 +463,39 @@ $ curl -X GET https://artist-capstone-fsnd-matthew.herokuapp.com/movies?page1
 {
   "movies": [
     {
+      "actors": [
+        "Meg Ryan",
+        "Tom Hanks"
+      ],
       "id": 1,
-      "release_date": "Sun, 16 Feb 2020 00:00:00 GMT",
-      "title": "Matthew first Movie"
+      "release_date": "1998-12-18",
+      "title": "You've got mails"
+    },
+    {
+      "actors": [
+        "Tom Hanks",
+        "Robin Wright"
+      ],
+      "id": 2,
+      "release_date": "1994-06-23",
+      "title": "Forrest Gump"
+    },
+    {
+      "actors": [],
+      "id": 3,
+      "release_date": "1994-09-10",
+      "title": "The Shawshank Redemption"
     }
   ],
   "success": true
 }
-
 ```
 #### Errors
-If you try fetch a page which does not have any movies, you will encounter an error which looks like this:
+If you try fetch a wrong movies endpoint, you will encounter an '404' error this:
 
 ```bash
-$ curl -X GET https://artist-capstone-fsnd-matthew.herokuapp.com/movies?page123124
+$ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/no_movies \
+ -H "Authorization: Bearer XXX"
 ```
 
 will return
@@ -401,9 +503,9 @@ will return
 ```js
 {
   "error": 404,
-  "message": "no movies found in database.",
+  "message": "Resource Not Found",
   "success": false
-}
+
 ```
 
 # <a name="post-movies"></a>
@@ -412,39 +514,52 @@ will return
 Insert new Movie into database.
 
 ```bash
-$ curl -X POST https://artist-capstone-fsnd-matthew.herokuapp.com/movies
+$ curl -X POST https://kvzhang-capstone-1213.herokuapp.com/movies/new \
+  -H "Content-Type: application/json" -H "Authorization: Bearer XXX" \
+--data '{"title": "dummy movie5","release_date": "12-25-2009"}'
 ```
 
 - Request Arguments: **None**
-- Request Headers: (_application/json_)
-       1. **string** `title` (<span style="color:red">*</span>required)
-       2. **date** `release_date` (<span style="color:red">*</span>required)
+- Request Headers:
+    - (_application/json_)
+        1. **string** `title`
+        2. **string** `release_date`
+    - **Authorization Header**
 - Requires permission: `create:movies`
 - Returns: 
-  1. **integer** `id from newly created movie`
+  1. **list of dict**: `new_movie` (format output of newly created movie)
   2. **boolean** `success`
 
 #### Example response
 ```js
 {
-    "created": 5,
-    "success": true
-}
+  "new_movie": [
+    {
+      "actors": [],
+      "id": 6,
+      "release_date": "2023-12-25",
+      "title": "dummy movie5"
+    }
+  ],
+  "success": true
+
 ```
 #### Errors
-If you try to create a new movie without a requiered field like `name`,
-it will throw a `422` error:
+If you try to create a new movie without a requiered field like `title`,
+it will throw a `400` error:
 
 ```bash
-$ curl -X GET https://artist-capstone-fsnd-matthew.herokuapp.com/movies?page123124
+$ curl -X GET https://kvzhang-capstone-1213.herokuapp.com/movies/new \
+  -H "Content-Type: application/json" -H "Authorization: Bearer XXX" \
+--data '{"title": "dummy movie5"}'
 ```
 
 will return
 
 ```js
 {
-  "error": 422,
-  "message": "no name provided.",
+  "error": 400,
+  "message": "Bad Input format",
   "success": false
 }
 ```
@@ -455,18 +570,23 @@ will return
 Edit an existing Movie
 
 ```bash
-$ curl -X PATCH https://artist-capstone-fsnd-matthew.herokuapp.com/movies/1
+$ curl -X PATCH https://kvzhang-capstone-1213.herokuapp.com/movies/6
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer XXX" \
+--data '{"title": "dummy movie6","release_date": "12-25-2023"}'
+
 ```
 
 - Request Arguments: **integer** `id from movie you want to update`
-- Request Headers: (_application/json_)
-       1. **string** `title` 
-       2. **date** `release_date` 
+- Request Headers:
+    - (_application/json_)
+        1. **string** `title`
+        2. **string** `release_date`
+    - **Authorization Header**
 - Requires permission: `edit:movies`
 - Returns: 
-  1. **integer** `id from updated movie`
-  2. **boolean** `success`
-  3. List of dict of movies with following fields:
+  1. **boolean** `success`
+  2. List of dict of movies with following fields:
         - **integer** `id`
         - **string** `title` 
         - **date** `release_date` 
@@ -474,23 +594,22 @@ $ curl -X PATCH https://artist-capstone-fsnd-matthew.herokuapp.com/movies/1
 #### Example response
 ```js
 {
-    "created": 1,
     "movie": [
         {
-            "id": 1,
-            "release_date": "Sun, 16 Feb 2020 00:00:00 GMT",
-            "title": "Test Movie 123"
+            "actors": [],
+            "id": 6,
+            "release_date": "2023-12-25",
+            "title": "dummy movie6"
         }
     ],
     "success": true
 }
-
 ```
 #### Errors
 If you try to update an movie with an invalid id it will throw an `404`error:
 
 ```bash
-$ curl -X PATCH https://artist-capstone-fsnd-matthew.herokuapp.com/movies/125
+$ curl -X PATCH https://kvzhang-capstone-1213.herokuapp.com/movies/125
 ```
 
 will return
@@ -498,31 +617,24 @@ will return
 ```js
 {
   "error": 404,
-  "message": "Movie with id 125 not found in database.",
+  "message": "Resource Not Found",
   "success": false
 }
 ```
-Additionally, trying to update an Movie with already existing field values will result in an `422` error:
-
-```js
-{
-  "error": 422,
-  "message": "provided field values are already set. No update needed.",
-  "success": false
-}
-```
-
 # <a name="delete-movies"></a>
 ### 8. DELETE /movies
 
 Delete an existing movie
 
 ```bash
-$ curl -X DELETE https://artist-capstone-fsnd-matthew.herokuapp.com/movies/1
+$ curl -X DELETE https://kvzhang-capstone-1213.herokuapp.com/movies/6
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer XXX"
 ```
 
 - Request Arguments: **integer** `id from movie you want to delete`
-- Request Headers: `None`
+- Request Headers:
+    - **Authorization Header**
 - Requires permission: `delete:movies`
 - Returns: 
   1. **integer** `id from deleted movie`
@@ -531,25 +643,24 @@ $ curl -X DELETE https://artist-capstone-fsnd-matthew.herokuapp.com/movies/1
 #### Example response
 ```js
 {
-    "deleted": 5,
-    "success": true
+  "deleted_movie": 6,
+  "success": true
 }
-
 ```
 #### Errors
 If you try to delete movie with an invalid id, it will throw an `404`error:
 
 ```bash
-$ curl -X DELETE https://artist-capstone-fsnd-matthew.herokuapp.com/movies/125
+$ curl -X DELETE https://kvzhang-capstone-1213.herokuapp.com/movies/125
 ```
 
 will return
 
 ```js
 {
-  "error": 404,
-  "message": "Movie with id 125 not found in database.",
-  "success": false
+    "error": 404,
+    "message": "Resource Not Found",
+    "success": false
 }
 ```
 

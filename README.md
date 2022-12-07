@@ -3,7 +3,7 @@
 ## Content
 
 1. [Motivation](#motivation)
-2. [Setup Project](#setup project)
+2. [Setup Project](#setup_project)
 3. [API Documentation](#api)
 4. [Authentification](#authentification)
 
@@ -32,15 +32,15 @@ It covers following technical topics :
     - code integration with auth0 APP and API to handle the authentication login, (see `auth/auth.py`) 
 * Deployment on `Heroku`
 
-<a name="setup project"></a>
-## Setup Overview
+<a name="setup_project"></a>
+## Setup Project Overview
 This app can be deployed in two ways:
 - locally for easy POC 
 - heroku 
 
 we will cover both ways below. 
 
-### Setup Project locally
+### Setup locally
 To access the app locally, you need a database, a virtual environment, dependencies installed, and environment variables set up. 
 You also need an account with Auth0, an authentication service.
 
@@ -115,7 +115,7 @@ Ran 26 tests in 20.894s
 OK
 
 ```
-### Deploy Project Heroku
+### Setup via Heroku
 1. clone the github repo in a new folder
 2. remove existing .git folder
 3. based on requirement of heroku deployment, add below files

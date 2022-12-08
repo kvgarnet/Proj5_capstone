@@ -8,7 +8,7 @@
 4. [Authentification](#authentification)
 
 <a name="motivation"></a>
-## Motivations & Covered Topics
+## Motivation 
 ### What is Capstone
 This is a flask REST API service for final project of `Udacity-Full-Stack-Nanodegree`.
 This app helps a Casting Agency models a company that is responsible for creating
@@ -17,7 +17,11 @@ actors' remuneration relationship between movies and actors
 ### How can I access the app?
 The casting app has been deployed to Heroku at this link:
 https://kvzhang-capstone-1213.herokuapp.com/
-- Click **login** link to log in, app will return JWT based on the roles predefined on auth0, which I saved in in config.py for easy test
+
+Inspired by https://auth0.com/docs/quickstart/webapp/python/interactive,
+I made basic login/logout endpoint for easy interaction with Auth0
+
+- Click **login** link to log in with predefined user in auth0 dashboard, app will return JWT based on the roles predefined on auth0, which I saved in config.py for easy test
 - Click **logout** link to log out.
 ### Tech topics
 It covers following technical topics :

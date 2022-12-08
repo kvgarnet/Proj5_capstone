@@ -12,3 +12,4 @@ Proj5*
 **/*.bak
 bak
 auth/.env
+.env

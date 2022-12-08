@@ -19,9 +19,6 @@ DEBUG = True
 
 # local production DB info
 # lower case for db_* , otherwise it will be picked up by flask app.config with useless configuration
-# db_host='capstone'
-# db_user='postgres'
-# db_password='postgres'
 db_name=getenv("DATABASE_NAME")
 db_user=getenv("DATABASE_USER")
 db_password = getenv("DATABASE_PASS")

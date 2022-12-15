@@ -20,7 +20,8 @@ def validate_date(date_str):
         return release_date
     except ValueError:
         print("Incorrect date string format. It should be MM-DD-YYYY")
-        abort(400)
+        abort(400, description='Incorrect date string format. It should be MM-DD-YYYY')
+
 
 def create_app(test_config=None):
     # create and configure the app
@@ -116,9 +117,9 @@ def create_app(test_config=None):
             movies = Movies.query.order_by('id').all()
         except:
             print(sys.exc_info())
-            abort(422)
+            abort(400, 'Incorrect date string format. It should be MM-DD-YYYY')
         if not movies:
-            abort(404)
+            abort(404, 'no movies found in DB')
         movies_format = format_queries(movies)
         return jsonify({
             "success": True,
@@ -130,7 +131,9 @@ def create_app(test_config=None):
     def get_a_movie(id):
         movie = Movies.query.filter_by(id=id).one_or_none()
         if not movie:
-            abort(404)
+            # https://stackoverflow.com/questions/21294889/how-to-get-access-to-error-message-from-abort-command-when-using-custom-error-ha
+            # abort(404)
+            abort(404,f'no movies found for {id}')
         return jsonify({
             "success": True,
             "movie": [movie.format()]
@@ -141,14 +144,14 @@ def create_app(test_config=None):
     def create_movie():
         body = request.get_json()
         if not body:
-            abort(400)
+            abort(400,'bad input for new movie')
         else:
             title = body.get('title', None)
             date_str = body.get('release_date', None)
             # print(f"{date_str}")
         # both fields required
         if not (title and date_str):
-            abort(400)
+            abort(400,'no titile or release date for new movie found')
         # check date input format compatibility
         release_date=validate_date(date_str)
         try:
@@ -164,7 +167,7 @@ def create_app(test_config=None):
         except:
             movie.rollback()
             print(sys.exc_info())
-            return abort(422)
+            return abort(422,'opps, fail to create new movies...')
         finally:
             movie.close()
 
@@ -176,13 +179,13 @@ def create_app(test_config=None):
         # query via 'filter'
         # movie = Movies.query.filter(Movies.id == id).one_or_none()
         if not movie:
-            abort(404)
+            abort(404,f'no movie found for id: {id}')
         body = request.get_json()
         title = body.get('title', None)
         release_date = body.get('release_date', None)
         # either fields submitted is fine
         if not (title or release_date):
-            abort(422)
+            abort(400, 'no title or release_date for update movie found')
         if title:
             movie.title = title
         # print(f"input date is :{release_date}")
@@ -201,7 +204,7 @@ def create_app(test_config=None):
         except:
             movie.rollback()
             print(sys.exc_info())
-            return abort(422)
+            return abort(422,'oops, fail to process...')
         finally:
             movie.close()
 
@@ -210,7 +213,7 @@ def create_app(test_config=None):
     def delete_movie(id):
         movie = Movies.query.filter_by(id=id).one_or_none()
         if not movie:
-            abort(404)
+            abort(404, f'no movie found for id: {id}')
         try:
             movie.delete()
             return jsonify({
@@ -220,7 +223,7 @@ def create_app(test_config=None):
         except:
             movie.rollback()
             print(sys.exc_info())
-            return abort(422)
+            return abort(422,'oops, fail to process...')
         finally:
             movie.close()
 
@@ -231,7 +234,7 @@ def create_app(test_config=None):
         try:
             actors = Actors.query.order_by('id').all()
         except:
-            abort(422)
+            abort(422, 'oops, fail to process...')
         if not actors:
             abort(404)
         actors_format = format_queries(actors)
@@ -437,7 +440,8 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 422,
-            "message": "Unprocessable Entity",
+            # "message": "Unprocessable Entity",
+            "message": error.description
         }), 422
 
     @app.errorhandler(404)
@@ -445,7 +449,8 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 404,
-            "message": "Resource Not Found"
+            # "message": "Resource Not Found"
+            "message": error.description
         }), 404
 
     @app.errorhandler(400)
@@ -453,7 +458,8 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 400,
-            "message": "Bad Input format"
+            "message": error.description
+            # "message": "Bad Input format"
         }), 400
 
     # @app.errorhandler(403)

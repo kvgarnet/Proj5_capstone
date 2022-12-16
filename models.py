@@ -34,12 +34,35 @@ def db_drop_and_create_all():
     db.create_all()
     #moved init_db work to init_db.py
 
+
+'''
+Extend the base Model class to add common methods
+'''
+class BaseMethodClass(db.Model):
+    __abstract__ = True
+
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def rollback(self):
+        db.session.rollback()
+
+    def close(self):
+        db.session.close()
 # Based on https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object
 # implement Movies and Actors models' many2many relationship with 'remuneration' Class
 # defined composite columns' UniqueConstraints based on
 # https://stackoverflow.com/questions/10059345/sqlalchemy-unique-across-multiple-columns
 # to avoid duplicate items creation
-class Remuneration(db.Model):
+class Remuneration(BaseMethodClass):
     __tablename__ = 'remuneration'
     id = db.Column(db.Integer,primary_key=True)
     movie_id = Column(Integer,ForeignKey('movies.id'), nullable=False)
@@ -57,24 +80,9 @@ class Remuneration(db.Model):
             'remuneration': self.remuneration
         }
 
-    def insert(self):
-        db.session.add(self)
-        db.session.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def update(self):
-        db.session.commit()
-
-    def rollback(self):
-        db.session.rollback()
-
-    def close(self):
-        db.session.close()
 #Movies
-class Movies(db.Model):
+class Movies(BaseMethodClass):
     __tablename__ = 'movies'
     id = Column(Integer, primary_key=True)
     title = Column(String)
@@ -89,26 +97,11 @@ class Movies(db.Model):
             'release_date': self.release_date.strftime('%Y-%m-%d'),
             'actors': [actor.actor.name for actor in self.actors]
         }
-    def insert(self):
-        db.session.add(self)
-        db.session.commit()
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def update(self):
-        db.session.commit()
-
-    def rollback(self):
-        db.session.rollback()
-
-    def close(self):
-        db.session.close()
 
     def __repr__(self):
         return f'<My Movie "{self.title}">'
 
-class Actors(db.Model):
+class Actors(BaseMethodClass):
     __tablename__ = 'actors'
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -125,19 +118,3 @@ class Actors(db.Model):
         }
     def __repr__(self):
         return f'<My Actor "{self.name}">'
-
-    def insert(self):
-        db.session.add(self)
-        db.session.commit()
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def update(self):
-        db.session.commit()
-
-    def rollback(self):
-        db.session.rollback()
-
-    def close(self):
-        db.session.close()

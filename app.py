@@ -132,8 +132,9 @@ def create_app(test_config=None):
         movie = Movies.query.filter_by(id=id).one_or_none()
         if not movie:
             # https://stackoverflow.com/questions/21294889/how-to-get-access-to-error-message-from-abort-command-when-using-custom-error-ha
-            # abort(404)
-            abort(404,f'no movies found for {id}')
+            # https://m.blog.naver.com/nomadgee/221341082627
+            # abort(status=404,description=f'no movies found for {id}')
+            abort(404, f'no movies found for {id}')
         return jsonify({
             "success": True,
             "movie": [movie.format()]

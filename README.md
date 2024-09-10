@@ -86,8 +86,8 @@ If you only want to test API, you can simply take the existing bearer tokens in 
 access it on http://127.0.0.1:8080
 
 6. init database: create database, tables and seed init data
- NOTE init_db.py WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
-,ONLY NECESSARY ON FIRST RUN
+ 
+ NOTE: init_db.py WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH, ONLY NECESSARY ON FIRST RUN
 
   ```bash 
   $ createdb capstone
